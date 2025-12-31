@@ -52,6 +52,7 @@ class CoursesDao {
          query: query,
          action: ACTION[3]
       };
+      let me = ''
 
       let response = await dbClient.axios.post(this.url, jsonData);
       console.log(response.data);

@@ -3,6 +3,10 @@ import { DbClient } from '../db/dbClient';
 import ACTION from '../helper/actions';
 import sanitizeValue from '../helper/sanitizer';
 
+function getCurrentDate() {
+  return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
+
 class CoursesDao {
  
   constructor() {}
@@ -37,14 +41,12 @@ class CoursesDao {
          ${sanitizeValue(data.START_DATE)},
          ${sanitizeValue(data.END_DATE)},
          ${sanitizeValue(data.CREATOR)},
-         ${sanitizeValue(data.DATE_CREATED)},
+         ${sanitizeValue(getCurrentDate())},
          ${sanitizeValue(data.PERFORMANCE_CYCLE_ID)},
          ${sanitizeValue(data.HAS_LINE_MANAGER)},         
          ${sanitizeValue(data.COURSE_PREVIEW_IMAGE)}
        )
       `;
-
-      console.log(query);
      
       let jsonData = {
          query: query,
@@ -60,6 +62,27 @@ class CoursesDao {
       throw error;
    }
   }
+
+
+public static async getCourses(): Promise<any> {
+   try {
+      const dbClient = new DbClient();
+      
+      const query = `SELECT * FROM H_STAFF_LMS_COURSES ORDER BY COURSE_ID DESC`;
+      let jsonData = {
+         query: query,
+         action: ACTION[1]
+      };
+
+      let response = await dbClient.axios.post('', jsonData);
+      return response;
+      
+   } catch (error) {
+      console.log('error', error);
+      throw error;
+   }
+}   
+  
 
 
   public static getMessage(): string {

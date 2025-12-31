@@ -21,10 +21,17 @@ export class CourseController {
 
   }
 
-  public static getCourse(req: Request, res: Response): void {
-    const course: Course = req.body;
-    const message = CourseService.createCourse(course);
-    sendSuccess(res, message, 'Fetched service message');
+  public static async getCourses(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await CourseService.getCourses();
+      sendSuccess(res, result.data, 'Courses fetched successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        sendError(res, error.message, 500);
+      } else {
+        sendError(res, String(error), 500);
+      }
+    } 
   }
 
 }

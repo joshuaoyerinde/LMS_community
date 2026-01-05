@@ -12,7 +12,6 @@ A Node.js + TypeScript boilerplate with Express, featuring a modular structure:
 - `npm run start` — Run compiled app
 - `npm run dev` — Run in development mode
 
-
 TABLES : H_STAFF_LMS_COURSES
 COURSE_ID	int
 COURSE_CATEGORY	varchar(150)	
@@ -28,7 +27,6 @@ DATE_CREATED	datetime
 PERFORMANCE_CYCLE_ID	int
 HAS_LINE_MANAGER  bit
 COURSE_PREVIEW_IMAGE varchar(MAX)	
-
 
 TABLE: H_STAFF_LMS_COURSE_LESSONS
 COURSE_LESSON_ID	int
@@ -48,13 +46,14 @@ COURSE_RECIPIENT_ID	int
 COURSE_ID	int	
 STAFF_ID	int	
 PROGRESS_SCORE	float	
-COURSE_SCORE	float	
+COURSE_SCORE	float	// sum of all lesson scores for the course
 DATE_COMPLETED	datetime	
 DATE_UPDATED	datetime	
 APPRAISED_BY	int	
 DATE_APPRAISED	datetime	
 
-
+//explanation of the table below
+The table H_STAFF_LMS_LESSONS_RECIPIENT is used to store the progress of the lessons that the staff has taken.
 TABLE: H_STAFF_LMS_LESSONS_RECIPIENT
 LESSON_RECIPIENT_ID	int	
 LESSON_ID	int	

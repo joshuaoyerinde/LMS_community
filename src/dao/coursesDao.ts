@@ -150,7 +150,7 @@ class CoursesDao {
                console.log('quiz_response', quizResponse);
             }
          }
-
+         
          // Return array of per-lesson responses in a structure consistent with other methods
          return { data: lessonsResponses };
 

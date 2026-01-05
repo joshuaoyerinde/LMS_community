@@ -135,7 +135,6 @@ class CoursesDao {
             };
 
             const response = await dbClient.axios.post(this.url, jsonData);
-            console.log('lesson insert response', response.data);
             lessonsResponses.push(response.data);
 
             // If this lesson has a quiz, create quiz entries tied to this lesson's ID
@@ -150,7 +149,7 @@ class CoursesDao {
                console.log('quiz_response', quizResponse);
             }
          }
-         
+
          // Return array of per-lesson responses in a structure consistent with other methods
          return { data: lessonsResponses };
 

@@ -10,7 +10,7 @@ export class CourseController {
    try {
       const course: Course = req.body;
       const result = await CourseService.createCourse(course);
-      sendSuccess(res, result.data, 'course created successfully');
+      sendSuccess(res, result, 'course created successfully');
     } catch (error) {
       if (error instanceof Error) {
         sendError(res, error.message, 500);

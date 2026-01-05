@@ -99,47 +99,61 @@ class CoursesDao {
 
  //call this function to create a lesson for a course
    public static async createLesson(data: any): Promise<any> {
-      
       try {
-         const dbClient = new DbClient(); 
+         const dbClient = new DbClient();
 
-         //lessons will be map into the table
-         let values = data.map((item: any) => {
-            return `(
-               ${sanitizeValue(item.COURSE_ID)}, 
+         // We'll insert lessons one-by-one so we can capture each lesson's inserted ID
+         const lessonsResponses: any[] = [];
+
+         for (const item of data) {
+            const query = `
+               INSERT INTO H_STAFF_LMS_COURSE_LESSONS (
+               COURSE_ID,
+               TITLE,
+               DESCRIPTION,
+               MEDIA_ATTACHMENT,
+               HAS_QUIZ,
+               QUIZ_DESCRIPTION,
+               ATTEMPTS_ALLOWED,
+               DURATION,
+               TOTAL_QUIZ_SCORE
+            ) VALUES (
+               ${sanitizeValue(item.COURSE_ID)},
                ${sanitizeValue(item.TITLE)},
-               ${sanitizeValue(item.DESCRIPTION)}, 
-               ${sanitizeValue(item.MEDIA_ATTACHMENT)}, 
-               ${sanitizeValue(item.HAS_QUIZ)}, 
-               ${sanitizeValue(item.QUIZ_DESCRIPTION)}, 
-               ${sanitizeValue(item.ATTEMPTS_ALLOWED)}, 
-               ${sanitizeValue(item.DURATION)}, 
+               ${sanitizeValue(item.DESCRIPTION)},
+               ${sanitizeValue(item.MEDIA_ATTACHMENT)},
+               ${sanitizeValue(item.HAS_QUIZ)},
+               ${sanitizeValue(item.QUIZ_DESCRIPTION)},
+               ${sanitizeValue(item.ATTEMPTS_ALLOWED)},
+               ${sanitizeValue(item.DURATION)},
                ${sanitizeValue(item.TOTAL_QUIZ_SCORE)}
             )`;
-         }); 
-         const query = `
-            INSERT INTO H_STAFF_LMS_COURSE_LESSONS (
-            COURSE_ID,
-            TITLE,
-            DESCRIPTION,
-            MEDIA_ATTACHMENT,
-            HAS_QUIZ,
-            QUIZ_DESCRIPTION,
-            ATTEMPTS_ALLOWED,
-            DURATION,
-            TOTAL_QUIZ_SCORE
-         ) VALUES ${values.join(",\n")}
-            `;
 
-         let jsonData = {
-            query: query,
-            action: ACTION[2]
+            const jsonData = {
+               query,
+               action: ACTION[2],
+            };
+
+            const response = await dbClient.axios.post(this.url, jsonData);
+            console.log('lesson insert response', response.data);
+            lessonsResponses.push(response.data);
+
+            // If this lesson has a quiz, create quiz entries tied to this lesson's ID
+            if (item.HAS_QUIZ === true && item.lesson_quiz && Array.isArray(item.lesson_quiz.questions) && item.lesson_quiz.questions.length > 0) {
+               const lessonId = response.data.data; // assume API returns inserted lesson id in data
+               const quizData = item.lesson_quiz.questions.map((quiz: any) => ({
+                  ...quiz,
+                  LESSON_ID: lessonId,
+               }));
+
+               const quizResponse = await this.createLessonQuiz(quizData);
+               console.log('quiz_response', quizResponse);
+            }
          }
 
-         let response = await dbClient.axios.post(this.url, jsonData);
-         console.log('lessons response', response.data);
-         return response.data;
-      
+         // Return array of per-lesson responses in a structure consistent with other methods
+         return { data: lessonsResponses };
+
       } catch (error) {
          console.log('error', error);
          throw error;
@@ -187,6 +201,43 @@ class CoursesDao {
       }
    }
 
+   public static async createLessonQuiz(data: any): Promise<any> {
+      console.log('createLessonQuiz data', data);
+      try {
+         const dbClient = new DbClient();
+         //map the data
+         let values = data.map((item: any) => {
+         return `(
+            ${sanitizeValue(item.LESSON_ID)}, 
+            ${sanitizeValue(item.QUIZ_QUESTION)},
+            ${sanitizeValue(item.QUIZ_OPTIONS)},
+            ${sanitizeValue(item.QUIZ_ANSWER)}
+         )`;
+         });
+         
+         const query = `
+         INSERT INTO H_STAFF_LMS_LESSON_QUIZ (
+         LESSON_ID,
+         QUIZ_QUESTION,
+         QUIZ_OPTIONS,
+         QUIZ_ANSWER
+      ) VALUES ${values.join(",\n")}
+         `;
+
+      let jsonData = {
+         query: query,
+         action: ACTION[2]
+      }
+
+      let response = await dbClient.axios.post(this.url, jsonData);
+      console.log('lesson quiz response', response.data);
+      return response.data;
+
+      } catch (error) {
+         console.log('error', error);
+         throw error;
+      }
+   }
   
    public static async getCourses(): Promise<any> {
       try {
@@ -207,12 +258,6 @@ class CoursesDao {
       }
    }
    
-
-
-
-  public static getMessage(): string {
-    return 'Hello from DAO!';
-  }
 }
 
 export default CoursesDao;

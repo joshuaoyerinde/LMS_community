@@ -18,4 +18,32 @@ export class FetchedController {
     } 
   }
 
+  public static async getCoursesById(req: Request, res: Response): Promise<void> {
+    try {
+      const id = req.params.id as unknown as number;
+      const result = await FetchService.getCoursesById(id);
+      sendSuccess(res, result, 'Course fetched successfully', 200);
+    } catch (error) {
+      if (error instanceof Error) {
+        sendError(res, error.message, 500);
+      } else {
+        sendError(res, String(error), 500);
+      }
+    } 
+  }
+
+  public static async getQuizByLessonId(req: Request, res: Response): Promise<void> {
+    try {
+      const id = req.params.id as unknown as number;
+      const result = await FetchService.getQuizByLessonId(id);
+      sendSuccess(res, result, 'Quiz fetched successfully', 200);
+    } catch (error) {
+      if (error instanceof Error) {
+        sendError(res, error.message, 500);
+      } else {
+        sendError(res, String(error), 500);
+      }
+    } 
+  }
+
 }

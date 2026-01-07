@@ -1,7 +1,10 @@
 
+
 import { DbClient } from '../db/dbClient';
 import ACTION from '../helper/actions';
 import sanitizeValue from '../helper/sanitizer';
+// import dotenv from 'dotenv';
+// dotenv.config();
 
 function getCurrentDate() {
   return new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -56,37 +59,44 @@ class CoursesDao {
       let all_courses_response = {
          course: null,
          lessons: null,
-         recipients: null
+         recipients: null,
+         lesson_recipients: null
       }
 
       let course_response = await dbClient.axios.post(this.url, jsonData);
-      console.log('course response', course_response.data);
       let course_id = course_response.data.data;
       all_courses_response.course = course_response.data;
+      // prepare containers for lesson/recipient responses so we can map lesson recipients later
+      let lessons_response: any = null;
+      let recipients_response: any = null;
+      let lessonsData: any = null;
+      let recipientsData: any = null;
+
+      //prepare recipients data
+      if(data.course_recipients){
+         //prepare recipients data
+         recipientsData =  {
+            ...data.course_recipients,
+            COURSE_ID: course_id
+         }
+      
+        recipients_response = await this.coursesRecipients(recipientsData);
+         console.log('recipients_response', recipients_response);
+         all_courses_response.recipients = recipients_response;
+      }
 
       if(Array.isArray(data.course_lessons) && data.course_lessons.length > 0){
          //prepare lessons data
-         let lessonsData = data.course_lessons.map((lesson: any) => {
+         lessonsData = data.course_lessons.map((lesson: any) => {
             return {
                ...lesson,
                COURSE_ID: course_id
             }
          });
-        let lessons_response = await this.createLesson(lessonsData);
+        lessons_response = await this.createLesson(lessonsData);
          all_courses_response.lessons = lessons_response.data;
       }
-
-      if(Array.isArray(data.course_recipients) && data.course_recipients.length > 0){
-         //prepare recipients data
-         let recipientsData = data.course_recipients.map((recipient: any) => {
-            return {
-               ...recipient,
-               COURSE_ID: course_id
-            }
-         });
-        let recipients_response = await this.coursesRecipients(recipientsData);
-         all_courses_response.recipients = recipients_response.data;
-      }
+      
       console.log('all_courses_response', all_courses_response);
       return all_courses_response;
       
@@ -96,8 +106,113 @@ class CoursesDao {
    }
   } 
 
+   public static async coursesRecipients(data: any): Promise<any> {
 
- //call this function to create a lesson for a course
+      let department_id = null;
+      let designation_id = null;
+      let directorate_id = null;
+      let recipient_type = null;
+      let staff_id = null;
+   
+
+      if(data.recipient_type === 'department'){
+         department_id = data.STAFF_IDS;
+         recipient_type = data.recipient_type;
+         staff_id = await this.getStaffId(recipient_type, department_id);
+      }
+      else if(data.recipient_type === 'designation'){
+         designation_id = data.STAFF_IDS;
+         recipient_type = data.recipient_type;
+         staff_id = await this.getStaffId(recipient_type, designation_id);
+      }
+      else if(data.recipient_type === 'individual'){
+         staff_id = data.STAFF_IDS;
+         recipient_type = data.recipient_type;
+         staff_id = await this.getStaffId(recipient_type, staff_id);
+      }
+      else if(data.recipient_type === 'directorate'){
+         directorate_id = data.STAFF_IDS;
+         recipient_type = data.recipient_type;
+         staff_id = await this.getStaffId(recipient_type, directorate_id);
+      }
+      else{
+         return null;
+      }
+
+      try {
+         const dbClient = new DbClient();
+         //map the data
+         if(!staff_id || staff_id.length === 0){
+            return {
+               data: [],
+               message: `No staff found for ${recipient_type}`
+            }
+         }
+
+         const STAFF_IDS = staff_id;
+      
+         let values = STAFF_IDS.map((item: any) => {
+         return `(
+            ${sanitizeValue(data.COURSE_ID)},
+            ${sanitizeValue(item)}
+         )`;
+         });
+         const query = `
+         INSERT INTO H_STAFF_LMS_COURSES_RECIPIENT (
+         COURSE_ID,
+         STAFF_ID
+         ) VALUES ${values.join(",\n")}
+         `;
+
+      let jsonData = {
+         query: query,
+         action: ACTION[2]
+      }
+
+      let response = await dbClient.axios.post(this.url, jsonData);
+      return response.data;
+
+      } catch (error) {
+         console.log('error', error);
+         throw error;
+      }
+   }
+
+   // Helper to get staff IDs based on recipient type and id
+   private static async getStaffId(recipient_type: string, recipient_id: Array<any>): Promise<any> {
+      console.log('recipient_id', recipient_id);
+      try {
+         const dbClient = new DbClient();
+         let query = '';
+         console.log('recipient_id', recipient_id);
+         if (recipient_type.toLocaleLowerCase() === 'department') {
+            query = `SELECT STAFF_ID FROM STAFF WHERE DEPARTMENT IN (${recipient_id.join(',')})`;
+         } else if (recipient_type.toLocaleLowerCase() === 'designation') {
+            query = `SELECT STAFF_ID FROM STAFF WHERE DESIGNATION IN (${recipient_id.join(',')})`;
+         } else if (recipient_type.toLocaleLowerCase() === 'directorate') {
+            query = `SELECT STAFF_ID FROM STAFF WHERE DIRECTORATE IN (${recipient_id.join(',')})`;
+         } else if (recipient_type.toLocaleLowerCase() === 'individual') {
+            query = `SELECT STAFF_ID FROM STAFF WHERE STAFF_ID IN (${recipient_id.join(',')})`;
+         } else {
+            return [];
+         }
+
+         const jsonData = {
+            query: query,
+            action: ACTION[1]
+         };
+
+         const response = await dbClient.axios.post(this.url, jsonData);
+         const staffIds = response.data.data.map((row: any) => row.STAFF_ID);
+         return staffIds;
+
+      } catch (error) {
+         console.log('error', error);
+         throw error;
+      }
+   }
+
+   //call this function to create a lesson for a course
    public static async createLesson(data: any): Promise<any> {
       try {
          const dbClient = new DbClient();
@@ -135,7 +250,11 @@ class CoursesDao {
             };
 
             const response = await dbClient.axios.post(this.url, jsonData);
-            lessonsResponses.push(response.data);
+            lessonsResponses.push(
+               response.data,
+            );
+
+            console.log('lessonresponse', lessonsResponses);
 
             // If this lesson has a quiz, create quiz entries tied to this lesson's ID
             if (item.HAS_QUIZ === true && item.lesson_quiz && Array.isArray(item.lesson_quiz.questions) && item.lesson_quiz.questions.length > 0) {
@@ -148,6 +267,10 @@ class CoursesDao {
                const quizResponse = await this.createLessonQuiz(quizData);
                console.log('quiz_response', quizResponse);
             }
+               let courseId = item.COURSE_ID;
+               // Map all course recipients to this lesson by inserting into LESSONS_RECIPIENT from COURSES_RECIPIENT
+               const lessonRecipientResponse = await this.createLessonRecipient(lessonsResponses || [], courseId);
+               console.log('lessonRecipientResponse', lessonRecipientResponse);
          }
 
          // Return array of per-lesson responses in a structure consistent with other methods
@@ -159,61 +282,17 @@ class CoursesDao {
       }
    }
 
-   public static async coursesRecipients(data: any): Promise<any> {
-   //insert into H_STAFF_LMS_COURSES_RECIPIENT
-      try {
-         const dbClient = new DbClient();
-         //map the data
-         let values = data.map((item: any) => {
-         return `(
-            ${sanitizeValue(item.COURSE_ID)}, 
-            ${sanitizeValue(item.STAFF_ID)},
-            ${sanitizeValue(item.PROGRESS_SCORE)},
-            ${sanitizeValue(item.COURSE_SCORE)},
-            ${sanitizeValue(item.APPRAISED_BY)},
-            ${sanitizeValue(getCurrentDate())}
-         )`;
-         });
-         const query = `
-         INSERT INTO H_STAFF_LMS_COURSES_RECIPIENT (
-         COURSE_ID,
-         STAFF_ID,
-         PROGRESS_SCORE,
-         COURSE_SCORE,
-         APPRAISED_BY,
-         DATE_APPRAISED
-      ) VALUES ${values.join(",\n")}
-         `;
-
-      let jsonData = {
-         query: query,
-         action: ACTION[2]
-      }
-
-      let response = await dbClient.axios.post(this.url, jsonData);
-      console.log('recipients response', response.data);
-      return response.data;
-
-      } catch (error) {
-         console.log('error', error);
-         throw error;
-      }
-   }
-
    public static async createLessonQuiz(data: any): Promise<any> {
-      console.log('createLessonQuiz data', data);
       try {
          const dbClient = new DbClient();
          //map the data
-         let values = data.map((item: any) => {
-         return `(
+         const values = data.map((item: any) => `(
             ${sanitizeValue(item.LESSON_ID)}, 
             ${sanitizeValue(item.QUIZ_QUESTION)},
             ${sanitizeValue(item.QUIZ_OPTIONS)},
             ${sanitizeValue(item.QUIZ_ANSWER)}
-         )`;
-         });
-         
+         )`);
+
          const query = `
          INSERT INTO H_STAFF_LMS_LESSON_QUIZ (
          LESSON_ID,
@@ -223,39 +302,110 @@ class CoursesDao {
       ) VALUES ${values.join(",\n")}
          `;
 
-      let jsonData = {
-         query: query,
-         action: ACTION[2]
-      }
+         const jsonData = {
+            query: query,
+            action: ACTION[2]
+         };
 
-      let response = await dbClient.axios.post(this.url, jsonData);
-      console.log('lesson quiz response', response.data);
-      return response.data;
+         const response = await dbClient.axios.post(this.url, jsonData);
+         console.log('lesson quiz response', response.data);
+         return response.data;
 
       } catch (error) {
          console.log('error', error);
          throw error;
       }
    }
-  
-   public static async getCourses(): Promise<any> {
+
+   public static async createLessonRecipient(lessonsCreated: any[], courseId: any): Promise<any> {
+      console.log('lessonsCreated', lessonsCreated, 'courseId', courseId);
+
       try {
          const dbClient = new DbClient();
+
+         if (lessonsCreated.length === 0) {
+            return {
+               data: [],
+               message: 'No lessons to map recipients for'
+            };
+         }
          
-         const query = `SELECT * FROM H_STAFF_LMS_COURSES ORDER BY COURSE_ID DESC`;
-         let jsonData = {
-            query: query,
+         let allResponses: any[] = [];
+         //get all staff id for the lesson recipients
+         const getRecipientsQuery = `
+            SELECT STAFF_ID
+            FROM H_STAFF_LMS_COURSES_RECIPIENT
+            WHERE COURSE_ID = ${Number(courseId)}
+         `;
+         const jsonData = {
+            query: getRecipientsQuery,
             action: ACTION[1]
          };
 
-         let response = await dbClient.axios.post('', jsonData);
-         return response;
+         const recipientsRes = await dbClient.axios.post(this.url, jsonData);
+         const recipients = recipientsRes.data.data;
+
+         const staffIds = recipients.map((r: any) => ({
+            STAFF_ID: r.STAFF_ID
+         }));
+
+         const lessonIds = lessonsCreated.map(l => ({
+            LESSON_ID: l.data
+         }));
+
+       
+         if (!lessonIds.length || !staffIds.length) return;
+
+         const values = [];
+
+         for (const lesson of lessonIds) {
+            for (const staff of staffIds) {
+               values.push(`
+                  (
+                  ${sanitizeValue(lesson.LESSON_ID)},
+                  ${sanitizeValue(staff.STAFF_ID)},
+                  0,
+                  NULL,
+                  0,
+                  NULL,
+                  NULL,
+                  NULL
+                  )
+               `);
+            }
+         }
+         const insertQuery = `
+            INSERT INTO H_STAFF_LMS_LESSONS_RECIPIENT (
+               LESSON_ID,
+               STAFF_ID,
+               IS_COMPLETED,
+               SCORE,
+               IS_VIEWED,
+               DATE_COMPLETED,
+               DATE_SCORED,
+               DATE_VIEWED
+            ) VALUES ${values.join(",\n")}
+         `;
+
+         const insertJsonData = {
+            query: insertQuery,
+            action: ACTION[2], // INSERT
+         };
+
+         const insertRes = await dbClient.axios.post(this.url, insertJsonData);
+         allResponses.push(insertRes.data);
+
+         return {
+            data: allResponses,
+            message: 'Lesson recipients mapped successfully'
+         }; 
          
-      } catch (error) {
+      }catch (error) {
          console.log('error', error);
          throw error;
-      }
+      }  
    }
+
    
 }
 

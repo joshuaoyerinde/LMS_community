@@ -1,6 +1,8 @@
 import { DbClient } from '../db/dbClient';
 import ACTION from '../helper/actions';
 import sanitizeValue from '../helper/sanitizer';
+// import dotenv from 'dotenv';
+// dotenv.config();
 
 class FetchedDao {
   constructor() {}
@@ -9,9 +11,35 @@ class FetchedDao {
   public static async getAllCourses(): Promise<any> {
     try {
       const dbClient = new DbClient();
-
+      //a query to get all courses will be modify here, is going to join the lesson table uind the courses table and join lesson recipients table using lesson id to get total number of is_completed lesssons
+      
       const query = `
-        SELECT * FROM H_STAFF_LMS_COURSES ORDER BY COURSE_ID DESC
+        SELECT 
+          C.COURSE_ID,
+          C.COURSE_CATEGORY,
+          C.COMPANY_ID,
+          C.COURSE_TITLE,
+          C.COURSE_OBJECTIVE,
+          C.COURSE_DESCRIPTION,
+          C.USE_AS_APPRAISAL,
+          CONVERT(varchar(10), C.START_DATE, 23) AS START_DATE,
+          CONVERT(varchar(10), C.END_DATE, 23) AS END_DATE,
+          C.CREATOR,
+          C.PERFORMANCE_CYCLE_ID,
+          C.HAS_LINE_MANAGER,
+          C.COURSE_PREVIEW_IMAGE,
+          R.PROGRESS_SCORE
+        FROM H_STAFF_LMS_COURSES C
+        LEFT JOIN H_STAFF_LMS_COURSE_LESSONS L ON C.COURSE_ID = L.COURSE_ID
+        LEFT JOIN H_STAFF_LMS_COURSES_RECIPIENT R ON C.COURSE_ID = R.COURSE_ID
+        --TOTAL NUMBER OF IS_COMPLETED LESSONS--
+        LEFT JOIN (
+          SELECT LESSON_RECIPIENT_ID, LESSON_ID, COUNT(LESSON_RECIPIENT_ID) AS COUNT_COMPLETED_LESSONS
+          FROM H_STAFF_LMS_LESSONS_RECIPIENT
+          WHERE IS_COMPLETED = 1
+          GROUP BY LESSON_RECIPIENT_ID, LESSON_ID
+        ) AS COMPLETED_LESSONS ON L.COURSE_LESSON_ID = COMPLETED_LESSONS.LESSON_ID
+        ORDER BY COURSE_ID DESC;
       `;
       let jsonData = {
         query: query,

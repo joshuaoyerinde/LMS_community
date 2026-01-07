@@ -14,13 +14,6 @@ export class CourseService {
       }
    }
 
-   public static async getCourses(): Promise<any> {
-      try {
-         return await coursesDao.getCourses();
-      } catch (error) {
-         throw error;
-      }
-   }
 
 
 }

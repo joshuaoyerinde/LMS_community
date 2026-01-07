@@ -36,7 +36,7 @@ export class FetchedController {
     try {
       const id = req.params.id as unknown as number;
       const result = await FetchService.getQuizByLessonId(id);
-      sendSuccess(res, result, 'Quiz fetched successfully', 200);
+      sendSuccess(res, result.data, result.message, 200);
     } catch (error) {
       if (error instanceof Error) {
         sendError(res, error.message, 500);

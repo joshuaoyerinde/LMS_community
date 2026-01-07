@@ -58,7 +58,8 @@ class FetchedDao {
               L.QUIZ_DESCRIPTION,
               L.ATTEMPTS_ALLOWED,
               L.DURATION,
-              L.TOTAL_QUIZ_SCORE
+              L.TOTAL_QUIZ_SCORE,
+              L.COURSE_LESSON_ID AS LESSON_ID
             FROM H_STAFF_LMS_COURSE_LESSONS L
             WHERE L.COURSE_ID = C.COURSE_ID
             FOR JSON PATH
@@ -111,7 +112,11 @@ class FetchedDao {
         SELECT (
           SELECT JSON_QUERY(
             (
-              SELECT q.QUIZ_QUESTION, q.QUIZ_ANSWER, q.QUIZ_OPTIONS
+              SELECT 
+              q.QUIZ_QUESTION,
+               q.QUIZ_ANSWER, 
+               q.QUIZ_OPTIONS,
+               q.LESSON_QUIZ_ID AS QUIZ_ID
               FROM H_STAFF_LMS_LESSON_QUIZ q
               WHERE q.LESSON_ID = ${sanitizeValue(id)}
               FOR JSON PATH
@@ -127,6 +132,7 @@ class FetchedDao {
       }
       let response = await dbClient.axios.post(this.url, jsonData);
       // Many remote adapters return the JSON string in response.data[0].lesson_quiz or in response.data.data
+    
       if (response && response.data) {
         // If API returned parsed data in response.data.data, return it
         if (response.data.data) {
@@ -134,18 +140,28 @@ class FetchedDao {
           
           const jsonParse =  JSON.parse(data);
           const mapQuiz = JSON.parse(jsonParse.lesson_quiz);
-
+          console.log('mapQuiz', mapQuiz);
+          //if is an empty object
+          if (mapQuiz.questions === undefined) {
+            return {
+              message: 'No quiz found for this lesson',
+              questions: []
+            }
+          }
           const formattedQuiz = mapQuiz.questions.map((quiz: any) => {
             return {
               ...quiz,
               QUIZ_OPTIONS: quiz.QUIZ_OPTIONS.split(',')
             }
           });
-          return formattedQuiz;
+          return {
+            data: formattedQuiz,
+            message: 'Quiz fetched successfully'
+          }
         }
       }
 
-      return response;
+      return response.data; 
 
     } catch (error) {
       console.log('error', error);

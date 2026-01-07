@@ -125,7 +125,7 @@ class CoursesDao {
          recipient_type = data.recipient_type;
          staff_id = await this.getStaffId(recipient_type, designation_id);
       }
-      else if(data.recipient_type === 'individual'){
+      else if(data.recipient_type === 'region'){
          staff_id = data.STAFF_IDS;
          recipient_type = data.recipient_type;
          staff_id = await this.getStaffId(recipient_type, staff_id);
@@ -134,6 +134,11 @@ class CoursesDao {
          directorate_id = data.STAFF_IDS;
          recipient_type = data.recipient_type;
          staff_id = await this.getStaffId(recipient_type, directorate_id);
+      }
+      else if(data.recipient_type === 'individual'){
+         staff_id = data.STAFF_IDS;
+         recipient_type = data.recipient_type;
+         staff_id = await this.getStaffId(recipient_type, staff_id);
       }
       else{
          return null;
@@ -191,9 +196,13 @@ class CoursesDao {
             query = `SELECT STAFF_ID FROM STAFF WHERE DESIGNATION IN (${recipient_id.join(',')})`;
          } else if (recipient_type.toLocaleLowerCase() === 'directorate') {
             query = `SELECT STAFF_ID FROM STAFF WHERE DIRECTORATE IN (${recipient_id.join(',')})`;
-         } else if (recipient_type.toLocaleLowerCase() === 'individual') {
+         } else if (recipient_type.toLocaleLowerCase() === 'region') {
+            query = `SELECT STAFF_ID FROM STAFF WHERE REGION IN (${recipient_id.join(',')})`;
+         } 
+         else if (recipient_type.toLocaleLowerCase() === 'individual') {
             query = `SELECT STAFF_ID FROM STAFF WHERE STAFF_ID IN (${recipient_id.join(',')})`;
-         } else {
+         }
+         else {
             return [];
          }
 

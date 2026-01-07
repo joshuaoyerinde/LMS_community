@@ -140,7 +140,6 @@ class FetchedDao {
           
           const jsonParse =  JSON.parse(data);
           const mapQuiz = JSON.parse(jsonParse.lesson_quiz);
-          console.log('mapQuiz', mapQuiz);
           //if is an empty object
           if (mapQuiz.questions === undefined) {
             return {

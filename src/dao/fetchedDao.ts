@@ -145,7 +145,7 @@ class FetchedDao {
           if (mapQuiz.questions === undefined) {
             return {
               message: 'No quiz found for this lesson',
-              questions: []
+              data: []
             }
           }
           const formattedQuiz = mapQuiz.questions.map((quiz: any) => {

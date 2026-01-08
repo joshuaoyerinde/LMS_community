@@ -97,7 +97,6 @@ class CoursesDao {
          all_courses_response.lessons = lessons_response.data;
       }
       
-      console.log('all_courses_response', all_courses_response);
       return all_courses_response;
       
    } catch (error) {
@@ -262,8 +261,6 @@ class CoursesDao {
             lessonsResponses.push(
                response.data,
             );
-
-            console.log('lessonresponse', lessonsResponses);
 
             // If this lesson has a quiz, create quiz entries tied to this lesson's ID
             if (item.HAS_QUIZ === true && item.lesson_quiz && Array.isArray(item.lesson_quiz.questions) && item.lesson_quiz.questions.length > 0) {

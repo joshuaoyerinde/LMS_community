@@ -12,4 +12,12 @@ courses.post('/create', CourseController.createCourse);
 courses.get('/get-all-courses', FetchedController.getAllCourses);
 courses.get('/get-courses-by-id/:id', FetchedController.getCoursesById);
 courses.get('/get-quiz-by-lesson-id/:id', FetchedController.getQuizByLessonId);
+
+//to update courses
+courses.post('/update-course', CourseController.updateCourse);
+courses.post('/update-course-lesson', CourseController.updateCourseLesson);
+courses.post('/update-course-recipient', CourseController.updateCourseRecipient);
+courses.post('/update-lesson-quiz', CourseController.updateLessonQuiz);
+courses.put('/update-lesson-recipient', CourseController.updateLessonRecipient);
+
 export default courses;

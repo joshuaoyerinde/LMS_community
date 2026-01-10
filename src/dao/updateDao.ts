@@ -89,7 +89,7 @@ class UpdateDao {
 
       let jsonData = {
         query: query,
-        action: ACTION[2]
+        action: ACTION[3]
       }
 
       let response = await dbClient.axios.post(this.url, jsonData);
@@ -128,7 +128,6 @@ class UpdateDao {
   }
 
   public static async updateLessonRecipient(param:any, data: any): Promise<any> {
-   console.log('param', param.update_type);
     try {
       const dbClient = new DbClient();
 

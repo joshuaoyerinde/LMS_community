@@ -61,9 +61,11 @@ class FetchedDao {
       const dbClient = new DbClient();
       // MSSQL single-query JSON aggregation using FOR JSON PATH to build nested structure server-side.
       // This avoids MySQL-specific functions like DATE_FORMAT and uses SQL Server's JSON generation functions.
+    
       const query = `
-        DECLARE @CourseIdParam sql_variant = ${sanitizeValue(id)};
+        DECLARE @CourseIdParam INT = ${sanitizeValue(id)};
 
+        SELECT CAST((
         SELECT
           C.COURSE_CATEGORY,
           C.COMPANY_ID,
@@ -77,7 +79,8 @@ class FetchedDao {
           C.PERFORMANCE_CYCLE_ID,
           C.HAS_LINE_MANAGER,
           C.COURSE_PREVIEW_IMAGE,
-          (
+          -- returned alone
+          JSON_QUERY((
             SELECT
               L.TITLE,
               L.DESCRIPTION,
@@ -91,25 +94,27 @@ class FetchedDao {
             FROM H_STAFF_LMS_COURSE_LESSONS L
             WHERE L.COURSE_ID = C.COURSE_ID
             FOR JSON PATH
-          ) AS course_lessons,
-          (
+          )) AS course_lessons,
+          
+          JSON_QUERY((
             SELECT
               R.STAFF_ID,
-              R.PROGRESS_SCORE,
+              R.PROGRESS_SCORE AS PROGRESS_SCORE,
               R.COURSE_SCORE,
-              R.APPRAISED_BY,
-              FORMAT(R.DATE_APPRAISED, 'yyyy-MM-ddTHH:mm:ssZ') AS DATE_APPRAISED
+              R.APPRAISED_BY
             FROM H_STAFF_LMS_COURSES_RECIPIENT R
             WHERE R.COURSE_ID = C.COURSE_ID
             FOR JSON PATH
-          ) AS course_recipients
+          )) AS course_recipients
+
         FROM H_STAFF_LMS_COURSES C
-        WHERE C.COURSE_ID = ${sanitizeValue(id)}
-        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;
-      `;
+        WHERE C.COURSE_ID = @CourseIdParam
+        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+      )AS NVARCHAR(MAX)) AS JsonResult;
+      `
       let jsonData = {
         query: query,
-        action: ACTION[0]
+        action: ACTION[1]
       }
       let response = await dbClient.axios.post(this.url, jsonData);
    
@@ -117,10 +122,11 @@ class FetchedDao {
       if (response && response.data) {
         // If API already returned parsed JSON in data, return it
         if (response.data.data) {
-          const data =  Object.values(response.data.data)[0] as string;
+          const data =  Object.values(response.data.data[0])[0] as string;
           const finalData = JSON.parse(data);
           return finalData;
         }
+        return response.data.data;
       }
 
       return response;

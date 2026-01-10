@@ -184,11 +184,9 @@ class CoursesDao {
 
    // Helper to get staff IDs based on recipient type and id
    private static async getStaffId(recipient_type: string, recipient_id: Array<any>): Promise<any> {
-      console.log('recipient_id', recipient_id);
       try {
          const dbClient = new DbClient();
          let query = '';
-         console.log('recipient_id', recipient_id);
          if (recipient_type.toLocaleLowerCase() === 'department') {
             query = `SELECT STAFF_ID FROM STAFF WHERE DEPARTMENT IN (${recipient_id.join(',')})`;
          } else if (recipient_type.toLocaleLowerCase() === 'designation') {

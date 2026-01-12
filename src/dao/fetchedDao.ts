@@ -12,7 +12,6 @@ class FetchedDao {
     try {
       const dbClient = new DbClient();
       //a query to get all courses will be modify here, is going to join the lesson table uind the courses table and join lesson recipients table using lesson id to get total number of is_completed lesssons
-      
       const query = `
         SELECT 
           C.COURSE_ID,
@@ -27,11 +26,9 @@ class FetchedDao {
           C.CREATOR,
           C.PERFORMANCE_CYCLE_ID,
           C.HAS_LINE_MANAGER,
-          C.COURSE_PREVIEW_IMAGE,
-          R.PROGRESS_SCORE
+          C.COURSE_PREVIEW_IMAGE
         FROM H_STAFF_LMS_COURSES C
         LEFT JOIN H_STAFF_LMS_COURSE_LESSONS L ON C.COURSE_ID = L.COURSE_ID
-        LEFT JOIN H_STAFF_LMS_COURSES_RECIPIENT R ON C.COURSE_ID = R.COURSE_ID
         --TOTAL NUMBER OF IS_COMPLETED LESSONS--
         LEFT JOIN (
           SELECT LESSON_RECIPIENT_ID, LESSON_ID, COUNT(LESSON_RECIPIENT_ID) AS COUNT_COMPLETED_LESSONS
@@ -174,6 +171,7 @@ class FetchedDao {
           
           const jsonParse =  JSON.parse(data);
           const mapQuiz = JSON.parse(jsonParse.lesson_quiz);
+         console.log('mapQuiz', mapQuiz);
           //if is an empty object
           if (mapQuiz.questions === undefined) {
             return {
@@ -182,10 +180,13 @@ class FetchedDao {
             }
           }
           const formattedQuiz = mapQuiz.questions.map((quiz: any) => {
-            return {
-              ...quiz,
-              QUIZ_OPTIONS: quiz.QUIZ_OPTIONS.split(',')
+            if(quiz.QUIZ_OPTIONS !== undefined){
+              return {
+                ...quiz,
+                QUIZ_OPTIONS: quiz.QUIZ_OPTIONS.split(',')
+              }
             }
+            return quiz;
           });
           return {
             data: formattedQuiz,

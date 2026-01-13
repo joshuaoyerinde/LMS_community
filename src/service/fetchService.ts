@@ -31,4 +31,13 @@ export class FetchService {
         throw error;
       }
    }
+
+    public static async getCoursesByStaffId(staffId: number): Promise<any> {
+      try {
+        const response = await fetchDao.getCoursesByStaffId(staffId);
+        return response;
+      } catch (error) {
+        throw error;
+      }
+   }
 }

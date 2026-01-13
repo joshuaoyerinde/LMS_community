@@ -12,6 +12,7 @@ courses.post('/create', CourseController.createCourse);
 courses.get('/get-all-courses', FetchedController.getAllCourses);
 courses.get('/get-courses-by-id/:id', FetchedController.getCoursesById);
 courses.get('/get-quiz-by-lesson-id/:id', FetchedController.getQuizByLessonId);
+courses.get('/get-courses-by-staff-id/:staffId', FetchedController.getCoursesByStaffId);
 
 //to update courses
 courses.post('/update-course', CourseController.updateCourse);

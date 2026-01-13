@@ -46,4 +46,18 @@ export class FetchedController {
     } 
   }
 
+  public static async getCoursesByStaffId(req: Request, res: Response): Promise<void> {
+    try {
+      const staffId = req.params.staffId as unknown as number;
+      const result = await FetchService.getCoursesByStaffId(staffId);
+      sendSuccess(res, result, 'Courses fetched successfully', 200);
+    } catch (error) {
+      if (error instanceof Error) {
+        sendError(res, error.message, 500);
+      } else {
+        sendError(res, String(error), 500);
+      }
+    } 
+  }
+
 }

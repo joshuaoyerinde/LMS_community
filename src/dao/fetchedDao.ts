@@ -11,7 +11,7 @@ class FetchedDao {
   public static async getAllCourses(): Promise<any> {
     try {
       const dbClient = new DbClient();
-      //a query to get all courses will be modify here, is going to join the lesson table uind the courses table and join lesson recipients table using lesson id to get total number of is_completed lesssons
+     
       const query = `
         SELECT 
           C.COURSE_ID,
@@ -57,7 +57,6 @@ class FetchedDao {
     try {
       const dbClient = new DbClient();
      
-      
       // Efficient MSSQL query: find courses where the staff is a recipient, include recipient details
       // and compute total lessons and completed lessons for that staff per course using derived tables.
       const query = `
@@ -166,12 +165,15 @@ class FetchedDao {
           JSON_QUERY((
             SELECT
               R.STAFF_ID,
+              -- join to STAFF table to surface a readable full name (falls back to empty strings if columns are NULL)
+              S.FULLNAME,
               R.PROGRESS_SCORE AS PROGRESS_SCORE,
               R.COURSE_SCORE,
               R.APPRAISED_BY
             FROM H_STAFF_LMS_COURSES_RECIPIENT R
+            LEFT JOIN STAFF S ON S.STAFF_ID = R.STAFF_ID
             WHERE R.COURSE_ID = C.COURSE_ID
-            FOR JSON PATH
+            FOR JSON PATH, INCLUDE_NULL_VALUES
           )) AS course_recipients
 
         FROM H_STAFF_LMS_COURSES C

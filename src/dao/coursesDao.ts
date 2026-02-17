@@ -312,7 +312,6 @@ class CoursesDao {
          };
 
          const response = await dbClient.axios.post(this.url, jsonData);
-         console.log('lesson quiz response', response.data);
          return response.data;
 
       } catch (error) {
@@ -322,8 +321,6 @@ class CoursesDao {
    }
 
    public static async createLessonRecipient(lessonsCreated: any[], courseId: any): Promise<any> {
-      console.log('lessonsCreated', lessonsCreated, 'courseId', courseId);
-
       try {
          const dbClient = new DbClient();
 

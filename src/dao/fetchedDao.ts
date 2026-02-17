@@ -57,7 +57,7 @@ class FetchedDao {
     try {
       const dbClient = new DbClient();
      
-      // Efficient MSSQL query: find courses where the staff is a recipient, include recipient details
+      //query: find courses where the staff is a recipient, include recipient details
       // and compute total lessons and completed lessons for that staff per course using derived tables.
       const query = `
         DECLARE @StaffId INT = ${sanitizeValue(staffId)};
@@ -156,8 +156,12 @@ class FetchedDao {
               L.ATTEMPTS_ALLOWED,
               L.DURATION,
               L.TOTAL_QUIZ_SCORE,
-              L.COURSE_LESSON_ID AS LESSON_ID
+              L.COURSE_LESSON_ID AS LESSON_ID,
+              LR.IS_COMPLETED,
+              LR.SCORE,
+              LR.IS_VIEWED
             FROM H_STAFF_LMS_COURSE_LESSONS L
+            LEFT JOIN H_STAFF_LMS_LESSONS_RECIPIENT LR ON LR.LESSON_ID = L.COURSE_LESSON_ID
             WHERE L.COURSE_ID = C.COURSE_ID
             FOR JSON PATH
           )) AS course_lessons,
@@ -243,7 +247,7 @@ class FetchedDao {
           
           const jsonParse =  JSON.parse(data);
           const mapQuiz = JSON.parse(jsonParse.lesson_quiz);
-         console.log('mapQuiz', mapQuiz);
+        
           //if is an empty object
           if (mapQuiz.questions === undefined) {
             return {

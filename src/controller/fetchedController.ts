@@ -21,7 +21,8 @@ export class FetchedController {
   public static async getCoursesById(req: Request, res: Response): Promise<void> {
     try {
       const id = req.params.id as unknown as number;
-      const result = await FetchService.getCoursesById(id);
+      const staffId = req.params.staffId as unknown as number;
+      const result = await FetchService.getCoursesById(id, staffId);
       sendSuccess(res, result, 'Course fetched successfully', 200);
     } catch (error) {
       if (error instanceof Error) {

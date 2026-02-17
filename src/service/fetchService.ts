@@ -14,9 +14,9 @@ export class FetchService {
       }
    }
 
-   public static async getCoursesById(id: number): Promise<any> {
+   public static async getCoursesById(id: number, staffId: number): Promise<any> {
       try {
-         const response = await fetchDao.getCoursesById(id);
+         const response = await fetchDao.getCoursesById(id, staffId);
          return response;
       } catch (error) {
          throw error;

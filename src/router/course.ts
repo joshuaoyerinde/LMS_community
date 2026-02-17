@@ -10,7 +10,7 @@ courses.post('/create', CourseController.createCourse);
 
 //get fetched courses
 courses.get('/get-all-courses', FetchedController.getAllCourses);
-courses.get('/get-courses-by-id/:id', FetchedController.getCoursesById);
+courses.get('/get-courses-by-id/:id/:staffId', FetchedController.getCoursesById); //id is the course id, staffId is the staff id(get lessons by courses_id)
 courses.get('/get-quiz-by-lesson-id/:id', FetchedController.getQuizByLessonId);
 courses.get('/get-courses-by-staff-id/:staffId', FetchedController.getCoursesByStaffId);
 

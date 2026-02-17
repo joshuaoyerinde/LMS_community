@@ -121,8 +121,9 @@ class FetchedDao {
     }
   }
 
-  public static async getCoursesById(id: number): Promise<any> {
-    console.log('id', id);
+
+  public static async getCoursesById(id: number, staffId: number): Promise<any> {
+    console.log('id', id, 'staffId', staffId);
     try {
       const dbClient = new DbClient();
       // MSSQL single-query JSON aggregation using FOR JSON PATH to build nested structure server-side.
@@ -130,6 +131,7 @@ class FetchedDao {
     
       const query = `
         DECLARE @CourseIdParam INT = ${sanitizeValue(id)};
+        DECLARE @StaffId INT = ${sanitizeValue(staffId)};
 
         SELECT CAST((
         SELECT
@@ -160,9 +162,10 @@ class FetchedDao {
               LR.IS_COMPLETED,
               LR.SCORE,
               LR.IS_VIEWED
-            FROM H_STAFF_LMS_COURSE_LESSONS L
-            LEFT JOIN H_STAFF_LMS_LESSONS_RECIPIENT LR ON LR.LESSON_ID = L.COURSE_LESSON_ID
-            WHERE L.COURSE_ID = C.COURSE_ID
+            FROM H_STAFF_LMS_LESSONS_RECIPIENT LR
+            INNER JOIN H_STAFF_LMS_COURSE_LESSONS L 
+            ON LR.LESSON_ID = L.COURSE_LESSON_ID
+            WHERE L.COURSE_ID = C.COURSE_ID AND LR.STAFF_ID = @StaffId
             FOR JSON PATH
           )) AS course_lessons,
           
@@ -177,7 +180,7 @@ class FetchedDao {
               R.APPRAISED_BY
             FROM H_STAFF_LMS_COURSES_RECIPIENT R
             LEFT JOIN STAFF S ON S.STAFF_ID = R.STAFF_ID
-            WHERE R.COURSE_ID = C.COURSE_ID
+            WHERE R.COURSE_ID = C.COURSE_ID AND R.STAFF_ID = @StaffId
             FOR JSON PATH, INCLUDE_NULL_VALUES
           )) AS course_recipients
 

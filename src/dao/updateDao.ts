@@ -138,7 +138,7 @@ class UpdateDao {
           SET IS_COMPLETED = ${sanitizeValue(data.IS_COMPLETED)},
               SCORE = ${sanitizeValue(data.SCORE)},
               DATE_COMPLETED = ${sanitizeValue(data.DATE_COMPLETED)},
-              DATE_SCORED = ${sanitizeValue(data.DATE_SCORED)},
+              DATE_SCORED = ${sanitizeValue(data.DATE_SCORED)}
           WHERE LESSON_RECIPIENT_ID = ${sanitizeValue(data.LESSON_RECIPIENT_ID)}
         `;
       }

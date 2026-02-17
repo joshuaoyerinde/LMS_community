@@ -171,6 +171,7 @@ class FetchedDao {
               R.STAFF_ID,
               -- join to STAFF table to surface a readable full name (falls back to empty strings if columns are NULL)
               S.FULLNAME,
+              S.EMAIL,
               R.PROGRESS_SCORE AS PROGRESS_SCORE,
               R.COURSE_SCORE,
               R.APPRAISED_BY

@@ -13,11 +13,11 @@ module.exports = {
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
   rules: {
     // Customize your rules here
-    'no-unused-vars': 'off',
+    'no-unused-vars': 'on',
     '@typescript-eslint/no-unused-vars': 'error',
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-inferrable-types': 'off',
-    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-inferrable-types': 'error',
+    '@typescript-eslint/no-non-null-assertion': 'error',
     'no-console': 'off',
   },
 };

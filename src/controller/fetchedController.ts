@@ -61,4 +61,44 @@ export class FetchedController {
     } 
   }
 
+
+  /*
+   ---All Methods bellow are for Staff Creator OnlY---
+  */
+
+  /**
+   * @param req 
+   * @param res 
+   */
+
+  public static async getCoursesByCreator(req: Request, res: Response): Promise<void> {
+    try {
+      const creator = req.params.creator as unknown as number;
+      console.log('creator', creator);
+      const result = await FetchService.getCoursesByCreator(creator);
+      sendSuccess(res, result, 'Courses fetched successfully', 200);
+    } catch (error) {
+      if (error instanceof Error) {
+        sendError(res, error.message, 500);
+      } else {
+        sendError(res, String(error), 500);
+      }
+    } 
+  }
+  
+
+  public static async getLessonsByCourseId(req: Request, res: Response): Promise<void> {
+    try {
+      const courseId = req.params.courseId as unknown as number;
+      const result = await FetchService.getLessonsByCourseId(courseId);
+      sendSuccess(res, result, 'Lessons fetched successfully', 200);
+    } catch (error) {
+      if (error instanceof Error) {
+        sendError(res, error.message, 500);
+      } else {
+        sendError(res, String(error), 500);
+      }
+    } 
+  }
+
 }

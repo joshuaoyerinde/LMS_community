@@ -8,6 +8,8 @@ class FetchedDao {
   constructor() {}
 
   public static url = process.env.BASE_URL || '';
+
+  //this functions is for admin only
   public static async getAllCourses(): Promise<any> {
     try {
       const dbClient = new DbClient();
@@ -28,15 +30,7 @@ class FetchedDao {
           C.HAS_LINE_MANAGER,
           C.COURSE_PREVIEW_IMAGE
         FROM H_STAFF_LMS_COURSES C
-        LEFT JOIN H_STAFF_LMS_COURSE_LESSONS L ON C.COURSE_ID = L.COURSE_ID
-        --TOTAL NUMBER OF IS_COMPLETED LESSONS--
-        LEFT JOIN (
-          SELECT LESSON_RECIPIENT_ID, LESSON_ID, COUNT(LESSON_RECIPIENT_ID) AS COUNT_COMPLETED_LESSONS
-          FROM H_STAFF_LMS_LESSONS_RECIPIENT
-          WHERE IS_COMPLETED = 1
-          GROUP BY LESSON_RECIPIENT_ID, LESSON_ID
-        ) AS COMPLETED_LESSONS ON L.COURSE_LESSON_ID = COMPLETED_LESSONS.LESSON_ID
-        ORDER BY COURSE_ID DESC;
+        ORDER BY C.COURSE_ID DESC;
       `;
       let jsonData = {
         query: query,

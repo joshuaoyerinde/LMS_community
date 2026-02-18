@@ -1,5 +1,6 @@
 
 import fetchDao from '../dao/fetchedDao';
+import userDao from '../dao/userDao';
 
 export class FetchService {
 
@@ -35,6 +36,27 @@ export class FetchService {
     public static async getCoursesByStaffId(staffId: number): Promise<any> {
       try {
         const response = await fetchDao.getCoursesByStaffId(staffId);
+        return response;
+      } catch (error) {
+        throw error;
+      }
+   }
+
+   /*
+      ---All Methods bellow are for Staff Creator OnlY---
+  */
+   public static async getCoursesByCreator(creator: number): Promise<any> {
+      try {
+        const response = await userDao.getCoursesByCreator(creator);
+        return response;
+      } catch (error) {
+        throw error;
+      }
+   }
+
+   public static async getLessonsByCourseId(courseId: number): Promise<any> {
+      try {
+        const response = await userDao.getLessonsByCourseId(courseId);
         return response;
       } catch (error) {
         throw error;

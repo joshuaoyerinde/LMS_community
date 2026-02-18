@@ -52,58 +52,55 @@ class FetchedDao {
     }
   }
 
-  //get courses for a specific staff member that login (staff id)
-  public static async getCoursesByStaffId(staffId: number): Promise<any> {
+  public static async getCoursesByStaffIdWithTotalLessons(staffId: number): Promise<any> {
     try {
       const dbClient = new DbClient();
-     
-      //query: find courses where the staff is a recipient, include recipient details
-      // and compute total lessons and completed lessons for that staff per course using derived tables.
-      const query = `
-        DECLARE @StaffId INT = ${sanitizeValue(staffId)};
 
-        SELECT
-          C.COURSE_ID,
-          C.COURSE_CATEGORY,
-          C.COMPANY_ID,
-          C.COURSE_TITLE,
+      const query = ` 
+        DECLARE @StaffId INT = ${sanitizeValue(staffId)};
+        
+        SELECT 
+          C.COURSE_ID, 
+          C.COURSE_CATEGORY, 
+          C.COMPANY_ID, 
+          C.COURSE_TITLE, 
           C.COURSE_OBJECTIVE,
-          C.COURSE_DESCRIPTION,
-          C.USE_AS_APPRAISAL,
-          CONVERT(varchar(10), C.START_DATE, 23) AS START_DATE,
-          CONVERT(varchar(10), C.END_DATE, 23) AS END_DATE,
-          C.CREATOR,
-          C.PERFORMANCE_CYCLE_ID,
-          C.HAS_LINE_MANAGER,
-          C.COURSE_PREVIEW_IMAGE,
-          -- recipient details for this staff
-          R.STAFF_ID,
-          R.PROGRESS_SCORE,
-          R.COURSE_SCORE,
-          R.APPRAISED_BY,
-          FORMAT(R.DATE_APPRAISED, 'yyyy-MM-ddTHH:mm:ssZ') AS DATE_APPRAISED,
-          -- total lessons for course
-          ISNULL(LD.TotalLessons, 0) AS TOTAL_LESSONS,
-          -- lessons completed by this staff for this course
+          C.COURSE_DESCRIPTION, 
+          C.USE_AS_APPRAISAL, 
+          CONVERT(varchar(10), C.START_DATE, 23) AS START_DATE, 
+          CONVERT(varchar(10), C.END_DATE, 23) AS END_DATE, 
+          C.CREATOR, 
+          C.PERFORMANCE_CYCLE_ID, 
+          C.HAS_LINE_MANAGER, 
+          C.COURSE_PREVIEW_IMAGE, 
+          -- recipient details for this staff 
+          R.STAFF_ID, 
+          R.PROGRESS_SCORE, 
+          R.COURSE_SCORE, 
+          R.APPRAISED_BY, 
+          FORMAT(R.DATE_APPRAISED, 'yyyy-MM-ddTHH:mm:ssZ') AS DATE_APPRAISED, 
+          -- total lessons for course 
+          ISNULL(LD.TotalLessons, 0) AS TOTAL_LESSONS, 
+          -- lessons completed by this staff for this course 
           ISNULL(CL.CompletedLessons, 0) AS COMPLETED_LESSONS
-        FROM H_STAFF_LMS_COURSES C
-        INNER JOIN H_STAFF_LMS_COURSES_RECIPIENT R
-          ON R.COURSE_ID = C.COURSE_ID AND R.STAFF_ID = @StaffId
-        -- derived table: total lessons per course
-        LEFT JOIN (
-          SELECT COURSE_ID, COUNT(1) AS TotalLessons
-          FROM H_STAFF_LMS_COURSE_LESSONS
-          GROUP BY COURSE_ID
-        ) LD ON LD.COURSE_ID = C.COURSE_ID
-        -- derived table: completed lessons by this staff per course
-        LEFT JOIN (
-          SELECT L.COURSE_ID, COUNT(1) AS CompletedLessons
-          FROM H_STAFF_LMS_COURSE_LESSONS L
-          INNER JOIN H_STAFF_LMS_LESSONS_RECIPIENT LR
-            ON LR.LESSON_ID = L.COURSE_LESSON_ID
-            AND LR.IS_COMPLETED = 1
-            AND LR.STAFF_ID = @StaffId
-          GROUP BY L.COURSE_ID
+        FROM H_STAFF_LMS_COURSES C 
+        INNER JOIN H_STAFF_LMS_COURSES_RECIPIENT R 
+          ON R.COURSE_ID = C.COURSE_ID AND R.STAFF_ID = @StaffId 
+        -- derived table: total lessons per course 
+        LEFT JOIN ( 
+          SELECT COURSE_ID, COUNT(1) AS TotalLessons 
+          FROM H_STAFF_LMS_COURSE_LESSONS 
+          GROUP BY COURSE_ID 
+        ) LD ON LD.COURSE_ID = C.COURSE_ID 
+        -- derived table: completed lessons by this staff per course 
+        LEFT JOIN ( 
+          SELECT L.COURSE_ID, COUNT(1) AS CompletedLessons 
+          FROM H_STAFF_LMS_COURSE_LESSONS L 
+          INNER JOIN H_STAFF_LMS_LESSONS_RECIPIENT LR 
+            ON LR.LESSON_ID = L.COURSE_LESSON_ID 
+            AND LR.IS_COMPLETED = 1 
+            AND LR.STAFF_ID = @StaffId  
+          GROUP BY L.COURSE_ID 
         ) CL ON CL.COURSE_ID = C.COURSE_ID
         ORDER BY C.COURSE_ID DESC;
       `;
@@ -120,10 +117,9 @@ class FetchedDao {
       throw error;
     }
   }
-
-
+  
+  //atempted user..
   public static async getCoursesById(id: number, staffId: number): Promise<any> {
-    console.log('id', id, 'staffId', staffId);
     try {
       const dbClient = new DbClient();
       // MSSQL single-query JSON aggregation using FOR JSON PATH to build nested structure server-side.
@@ -276,6 +272,75 @@ class FetchedDao {
       }
 
       return response.data; 
+
+    } catch (error) {
+      console.log('error', error);
+      throw error;
+    }
+  }
+
+  //Create an API to get course created by staff
+  public static async getCoursesByStaffId(staffId: number): Promise<any> {
+    try {
+      const dbClient = new DbClient();
+     
+      //query: find courses where the staff is a recipient, include recipient details
+      // and compute total lessons and completed lessons for that staff per course using derived tables.
+      const query = `
+        DECLARE @StaffId INT = ${sanitizeValue(staffId)};
+
+        SELECT
+          C.COURSE_ID,
+          C.COURSE_CATEGORY,
+          C.COMPANY_ID,
+          C.COURSE_TITLE,
+          C.COURSE_OBJECTIVE,
+          C.COURSE_DESCRIPTION,
+          C.USE_AS_APPRAISAL,
+          CONVERT(varchar(10), C.START_DATE, 23) AS START_DATE,
+          CONVERT(varchar(10), C.END_DATE, 23) AS END_DATE,
+          C.CREATOR,
+          C.PERFORMANCE_CYCLE_ID,
+          C.HAS_LINE_MANAGER,
+          C.COURSE_PREVIEW_IMAGE,
+          -- recipient details for this staff
+          R.STAFF_ID,
+          R.PROGRESS_SCORE,
+          R.COURSE_SCORE,
+          R.APPRAISED_BY,
+          FORMAT(R.DATE_APPRAISED, 'yyyy-MM-ddTHH:mm:ssZ') AS DATE_APPRAISED,
+          -- total lessons for course
+          ISNULL(LD.TotalLessons, 0) AS TOTAL_LESSONS,
+          -- lessons completed by this staff for this course
+          ISNULL(CL.CompletedLessons, 0) AS COMPLETED_LESSONS
+        FROM H_STAFF_LMS_COURSES C  
+        INNER JOIN H_STAFF_LMS_COURSES_RECIPIENT R
+          ON R.COURSE_ID = C.COURSE_ID AND R.STAFF_ID = @StaffId
+        -- derived table: total lessons per course
+        LEFT JOIN (
+          SELECT COURSE_ID, COUNT(1) AS TotalLessons
+          FROM H_STAFF_LMS_COURSE_LESSONS
+          GROUP BY COURSE_ID
+        ) LD ON LD.COURSE_ID = C.COURSE_ID
+        -- derived table: completed lessons by this staff per course
+        LEFT JOIN (
+          SELECT L.COURSE_ID, COUNT(1) AS CompletedLessons
+          FROM H_STAFF_LMS_COURSE_LESSONS L
+          INNER JOIN H_STAFF_LMS_LESSONS_RECIPIENT LR
+            ON LR.LESSON_ID = L.COURSE_LESSON_ID
+            AND LR.IS_COMPLETED = 1
+            AND LR.STAFF_ID = @StaffId
+          GROUP BY L.COURSE_ID
+        ) CL ON CL.COURSE_ID = C.COURSE_ID
+        ORDER BY C.COURSE_ID DESC;
+      `;
+      let jsonData = {
+        query: query,
+        action: ACTION[1]
+      }
+
+      let response = await dbClient.axios.post(this.url, jsonData);
+      return response.data;
 
     } catch (error) {
       console.log('error', error);

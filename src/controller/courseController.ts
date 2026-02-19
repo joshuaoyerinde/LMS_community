@@ -33,7 +33,6 @@ export class CourseController {
         sendError(res, String(error), 500);
       }
     }
-  
  }
 
  public static async updateCourseLesson(req: Request, res: Response): Promise<void> {

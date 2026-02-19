@@ -158,7 +158,7 @@ export default class UserDao {
          `;
          let jsonData = {
             query: query,
-            action: ACTION[3]
+            action: ACTION[4]
          }
          let response = await dbClient.axios.post(this.url, jsonData);
          return response.data;

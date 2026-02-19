@@ -25,12 +25,12 @@ class UpdateDao {
              PERFORMANCE_CYCLE_ID = ${sanitizeValue(data.PERFORMANCE_CYCLE_ID)},
              HAS_LINE_MANAGER = ${sanitizeValue(data.HAS_LINE_MANAGER)},
              COURSE_PREVIEW_IMAGE = ${sanitizeValue(data.COURSE_PREVIEW_IMAGE)}
-         WHERE COURSE_ID = ${sanitizeValue(data.COURSE_ID)}
+         WHERE COURSE_ID = ${sanitizeValue(data.COURSE_ID)} AND CREATOR = ${sanitizeValue(data.CREATOR)}
       `;
 
       let jsonData = {
         query: query,
-        action: ACTION[2]
+        action: ACTION[3]
       }
 
       let response = await dbClient.axios.post(this.url, jsonData);
@@ -56,12 +56,12 @@ class UpdateDao {
              ATTEMPTS_ALLOWED = ${sanitizeValue(data.ATTEMPTS_ALLOWED)},
              DURATION = ${sanitizeValue(data.DURATION)},
              TOTAL_QUIZ_SCORE = ${sanitizeValue(data.TOTAL_QUIZ_SCORE)}
-         WHERE COURSE_LESSON_ID = ${sanitizeValue(data.COURSE_LESSON_ID)}
+         WHERE COURSE_LESSON_ID = ${sanitizeValue(data.LESSON_ID)}
       `;
 
       let jsonData = {
         query: query,
-        action: ACTION[2]
+        action: ACTION[3]
       }
 
       let response = await dbClient.axios.post(this.url, jsonData);
@@ -110,7 +110,8 @@ class UpdateDao {
          SET QUIZ_QUESTION = ${sanitizeValue(data.QUIZ_QUESTION)},
              QUIZ_OPTIONS = ${sanitizeValue(data.QUIZ_OPTIONS)},
              QUIZ_ANSWER = ${sanitizeValue(data.QUIZ_ANSWER)}
-         WHERE LESSON_QUIZ_ID = ${sanitizeValue(data.LESSON_QUIZ_ID)}
+         WHERE LESSON_QUIZ_ID = ${sanitizeValue(data.LESSON_QUIZ_ID)} 
+         AND LESSON_ID = ${sanitizeValue(data.LESSON_ID)}
       `;
 
       let jsonData = {

@@ -23,7 +23,7 @@ courses.put('/update-lesson-recipient', CourseController.updateLessonRecipient);
 
 //routes for staff creator only
 courses.get('/get-courses-by-creator/:creator', FetchedController.getCoursesByCreator);
-courses.get('/get-lessons-by-course-id/:courseId', FetchedController.getLessonsByCourseId);
+courses.get('/get-course-by-course-id/:courseId', FetchedController.getLessonsByCourseId);
 courses.delete('/delete-course/:courseId/:creator', CourseController.deleteCourse);
 
 export default courses;

@@ -1,6 +1,7 @@
 
 import coursesDao from '../dao/coursesDao';
 import UpdateDao from '../dao/updateDao';
+import userDao from '../dao/userDao';
 
 export class CourseService {
 
@@ -49,6 +50,18 @@ export class CourseService {
    public static async updateLessonRecipient(param:any, data:any): Promise<any> {
       try {
          return await UpdateDao.updateLessonRecipient(param, data);
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   /*
+      ---All Methods bellow are for Staff Creator OnlY---   
+   */
+   //Delete a course by id and creator
+   public static async deleteCourse(courseId: number, creator: number): Promise<any> {
+      try {
+         return await userDao.deleteCourse(courseId, creator);
       } catch (error) {
          throw error;
       }

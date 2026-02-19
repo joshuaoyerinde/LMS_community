@@ -95,5 +95,24 @@ export class CourseController {
     }
   }
 
+  /**
+   * All Methods bellow are for Staff Creator Only---
+   */
+  //dlete a course by id and creator
+  public static async deleteCourse(req: Request, res: Response): Promise<void> {
+    try {
+      const courseId = req.params.courseId as unknown as number;
+      const creator = req.params.creator as unknown as number;
+      const result = await CourseService.deleteCourse(courseId, creator);
+      sendSuccess(res, result, 'course deleted successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        sendError(res, error.message, 500);
+      } else {
+        sendError(res, String(error), 500);
+      }
+    }
+  
+ }
 
 }

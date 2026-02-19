@@ -21,8 +21,9 @@ courses.post('/update-course-recipient', CourseController.updateCourseRecipient)
 courses.post('/update-lesson-quiz', CourseController.updateLessonQuiz);
 courses.put('/update-lesson-recipient', CourseController.updateLessonRecipient);
 
-//routees for staff creator only
+//routes for staff creator only
 courses.get('/get-courses-by-creator/:creator', FetchedController.getCoursesByCreator);
 courses.get('/get-lessons-by-course-id/:courseId', FetchedController.getLessonsByCourseId);
+courses.delete('/delete-course/:courseId/:creator', CourseController.deleteCourse);
 
 export default courses;

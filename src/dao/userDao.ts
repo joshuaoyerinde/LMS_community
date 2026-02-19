@@ -146,5 +146,27 @@ export default class UserDao {
       }
    }
 
+   //Delete a course by id and creator
+   public static async deleteCourse(courseId: number, creator: number): Promise<any> {
+      try {
+         const dbClient = new DbClient();
+        
+         const query = `
+            DELETE FROM H_STAFF_LMS_COURSES
+            WHERE COURSE_ID = ${sanitizeValue(courseId)}
+            AND CREATOR = ${sanitizeValue(creator)}
+         `;
+         let jsonData = {
+            query: query,
+            action: ACTION[3]
+         }
+         let response = await dbClient.axios.post(this.url, jsonData);
+         return response.data;
+      } catch (error) {
+         console.log('error', error);
+         throw error;
+      }
+   }
+
 
 }

@@ -151,7 +151,8 @@ class FetchedDao {
               L.COURSE_LESSON_ID AS LESSON_ID,
               LR.IS_COMPLETED,
               LR.SCORE,
-              LR.IS_VIEWED
+              LR.IS_VIEWED,
+              ISNULL((SELECT COUNT(1) FROM H_STAFF_LMS_LESSON_QUIZ q WHERE q.LESSON_ID = L.COURSE_LESSON_ID), 0) AS TOTAL_QUIZZES
             FROM H_STAFF_LMS_LESSONS_RECIPIENT LR
             INNER JOIN H_STAFF_LMS_COURSE_LESSONS L 
             ON LR.LESSON_ID = L.COURSE_LESSON_ID
@@ -170,7 +171,7 @@ class FetchedDao {
               R.APPRAISED_BY
             FROM H_STAFF_LMS_COURSES_RECIPIENT R
             LEFT JOIN STAFF S ON S.STAFF_ID = R.STAFF_ID
-            WHERE R.COURSE_ID = C.COURSE_ID AND R.STAFF_ID = @StaffId
+            WHERE R.COURSE_ID = C.COURSE_ID
             FOR JSON PATH, INCLUDE_NULL_VALUES
           )) AS course_recipients
 
@@ -273,7 +274,7 @@ class FetchedDao {
     }
   }
 
-  //Create an API to get course created by staff
+
   public static async getCoursesByStaffId(staffId: number): Promise<any> {
     try {
       const dbClient = new DbClient();

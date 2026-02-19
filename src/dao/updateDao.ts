@@ -139,7 +139,8 @@ class UpdateDao {
               SCORE = ${sanitizeValue(data.SCORE)},
               DATE_COMPLETED = ${sanitizeValue(data.DATE_COMPLETED)},
               DATE_SCORED = ${sanitizeValue(data.DATE_SCORED)}
-          WHERE LESSON_ID = ${sanitizeValue(data.LESSON_RECIPIENT_ID)}
+          WHERE LESSON_RECIPIENT_ID = ${sanitizeValue(data.LESSON_RECIPIENT_ID)} 
+          AND STAFF_ID = ${sanitizeValue(data.STAFF_ID)}
         `;
       }
       else if (param.update_type.toLocaleLowerCase() === 'isviewed') {
@@ -147,7 +148,8 @@ class UpdateDao {
           UPDATE H_STAFF_LMS_LESSONS_RECIPIENT
           SET IS_VIEWED = ${sanitizeValue(data.IS_VIEWED)},
               DATE_VIEWED = ${sanitizeValue(data.DATE_VIEWED)}
-          WHERE LESSON_ID = ${sanitizeValue(data.LESSON_RECIPIENT_ID)}
+          WHERE LESSON_RECIPIENT_ID = ${sanitizeValue(data.LESSON_RECIPIENT_ID)} 
+          AND STAFF_ID = ${sanitizeValue(data.STAFF_ID)}
         `;
       }
 

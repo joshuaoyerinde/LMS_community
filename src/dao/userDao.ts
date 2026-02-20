@@ -8,7 +8,6 @@ export default class UserDao {
 
    //Create an API to get course created by creator
    public static async getCoursesByCreator(creator: number): Promise<any> {
-      console.log('creator id in dao', creator);
       try {
          const dbClient = new DbClient();
         
@@ -126,7 +125,22 @@ export default class UserDao {
                            R.COURSE_SCORE,
                            R.APPRAISED_BY,
                            R.DATE_APPRAISED,
-                           R.DATE_COMPLETED
+                           R.DATE_COMPLETED,
+                           JSON_QUERY((
+                              SELECT
+                              LR.IS_COMPLETED,
+                              LR.SCORE,
+                              LR.IS_VIEWED,
+                              LR.LESSON_ID,
+                              LR.LESSON_RECIPIENT_ID,
+                              ISNULL((SELECT COUNT(1) FROM H_STAFF_LMS_LESSON_QUIZ q WHERE q.LESSON_ID = L.COURSE_LESSON_ID), 0) AS TOTAL_QUIZZES
+                              FROM H_STAFF_LMS_LESSONS_RECIPIENT LR
+                              INNER JOIN H_STAFF_LMS_COURSE_LESSONS L 
+                              ON LR.LESSON_ID = L.COURSE_LESSON_ID
+                              WHERE L.COURSE_ID = @CourseIdParam AND LR.STAFF_ID = R.STAFF_ID
+                              FOR JSON PATH
+                           )) AS LESSON_RECIPIENTS
+
                            FROM H_STAFF_LMS_COURSES_RECIPIENT R
                            LEFT JOIN STAFF S ON S.STAFF_ID = R.STAFF_ID
                            WHERE R.COURSE_ID = C.COURSE_ID

@@ -133,6 +133,7 @@ export default class UserDao {
                               LR.IS_VIEWED,
                               LR.LESSON_ID,
                               LR.LESSON_RECIPIENT_ID,
+                              L.TOTAL_QUIZ_SCORE,
                               ISNULL((SELECT COUNT(1) FROM H_STAFF_LMS_LESSON_QUIZ q WHERE q.LESSON_ID = L.COURSE_LESSON_ID), 0) AS TOTAL_QUIZZES
                               FROM H_STAFF_LMS_LESSONS_RECIPIENT LR
                               INNER JOIN H_STAFF_LMS_COURSE_LESSONS L 
